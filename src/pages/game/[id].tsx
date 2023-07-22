@@ -221,4 +221,6 @@ const CenterBox = styled(Box)`
       padding: 50px;
       `
 
+export const runtime = 'experimental-edge'
+
 export default Game;
