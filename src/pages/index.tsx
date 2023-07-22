@@ -1,16 +1,9 @@
-import { useBlockNumber } from 'wagmi'
-
-// Components
-import { Container, Navbar, Form, InputGroup, Button } from 'react-bootstrap'
-import { Footer } from './styles/global'
-import styled from 'styled-components'
 import { useMemo, useState } from 'react'
+import styled from 'styled-components'
+import { Container, Form, InputGroup, Button } from 'react-bootstrap'
+import { Code } from '../styles/global'
 
 export default function Home() {
-  const { data: block, isError, isLoading } = useBlockNumber({
-    watch: true,
-  })
-
   const [game, setGame] = useState('')
 
   const isValidAddress = useMemo(() => {
@@ -19,25 +12,6 @@ export default function Home() {
 
   return (
     <Container>
-      <Navbar expand="lg" className="bg-body-tertiary">
-        <Container>
-          <Navbar.Brand href="#">🛠️ Disputify</Navbar.Brand>
-          <span style={{ float: 'right' }}>
-            {!isError && !isLoading ? (
-              <a href="#">
-                <span style={{ color: 'green' }}>⏺</span> Connected
-                {' | '}
-                Block: {block?.toString()}
-              </a>
-            ) : (
-              <a href="#">
-                <span style={{ color: 'red' }}>⏺</span> Disconnected
-              </a>
-            )}
-          </span>
-        </Container>
-      </Navbar>
-
       <Content>
         <InputGroup>
           <Form.Control placeholder="0xbeefbabe" onKeyUp={(e) => setGame(e.currentTarget.value)} />
@@ -51,13 +25,19 @@ export default function Home() {
             window.location.href = `/game/${game}`
           }}
         >
-          Search Game
+          {isValidAddress ? (
+            'View Dispute'
+          ) : (
+            <>
+              Enter
+              {' '}
+              <Code>FaultDisputeGame</Code>
+              {' '}
+              address
+            </>
+          )}
         </Button>
       </Content>
-
-      <Footer>
-        Made with ❤️ by clabby.
-      </Footer>
     </Container>
   )
 }

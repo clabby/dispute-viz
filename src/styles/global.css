@@ -1,6 +1,10 @@
 :root {
   --bg: #1D2021;
   --text: #D4BE98;
+  --error: #EA6962;
+  --success: #A9B665;
+  --primary: #89B4FA;
+  --warning: #D8A657;
   --text-dark: #e5d8c1;
 }
 
@@ -64,5 +68,10 @@ html, body, .navbar {
     background-color: var(--text) !important;
     border-color: var(--text) !important;
     color: var(--bg) !important;
+  }
+
+  &:disabled {
+    border-color: var(--error) !important;
+    color: var(--error) !important;
   }
 }
