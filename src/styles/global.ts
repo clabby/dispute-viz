@@ -13,4 +13,9 @@ export const Code = styled.span`
   color: var(--bg) !important;
   padding: 0 5px;
   border-radius: 5px;
+
+  &:hover {
+    cursor: pointer;
+    background-color: var(--warning) !important;
+  }
 `

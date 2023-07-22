@@ -7,6 +7,7 @@ interface GameData {
   claims: ClaimData[]
   createdAt: number
   rootClaim: Hash
+  absolutePrestate: Hash
 }
 
 interface ClaimData {
@@ -30,13 +31,14 @@ const useDisputeGame = (address: string | string[] | undefined): { isFetching: b
   const fetch = useCallback(async () => {
     try {
       let res = await Promise.all([
-        client.readContract({ ...contract, functionName: 'rootClaim', args: [] }),
         client.readContract({ ...contract, functionName: 'createdAt', args: [] }),
-        client.readContract({ ...contract, functionName: 'claimDataLen', args: [] })
+        client.readContract({ ...contract, functionName: 'rootClaim', args: [] }),
+        client.readContract({ ...contract, functionName: 'ABSOLUTE_PRESTATE', args: [] }),
+        client.readContract({ ...contract, functionName: 'claimDataLen', args: [] }),
       ])
 
       const req = []
-      for (let i = 0; i < (res[2] as number); i++) {
+      for (let i = 0; i < (res[3] as number); i++) {
         req.push(client.readContract({ ...contract, functionName: 'claimData', args: [i] }))
       }
       let claims: ClaimData[] = await Promise.all(req) as ClaimData[]
@@ -46,8 +48,9 @@ const useDisputeGame = (address: string | string[] | undefined): { isFetching: b
       // Set the data.
       setData({
         claims,
-        rootClaim: res[0] as Hash,
-        createdAt: res[1] as number
+        createdAt: res[0] as number,
+        rootClaim: res[1] as Hash,
+        absolutePrestate: res[2] as Hash,
       })
     } catch (e) {
       console.error(e)
