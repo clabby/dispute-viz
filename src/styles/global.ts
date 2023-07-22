@@ -16,6 +16,6 @@ export const Code = styled.span`
 
   &:hover {
     cursor: pointer;
-    background-color: var(--warning) !important;
+    background-color: var(--text-dark) !important;
   }
 `

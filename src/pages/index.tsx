@@ -13,8 +13,9 @@ export default function Home() {
   return (
     <Container>
       <Content>
+        <h1 style={{ marginBottom: '0.5em', fontSize: '72px' }}>🔍</h1>
         <InputGroup>
-          <Form.Control placeholder="0xbeefbabe" onKeyUp={(e) => setGame(e.currentTarget.value)} />
+          <Form.Control placeholder="0xbaDC0DE..." onKeyUp={(e) => setGame(e.currentTarget.value)} />
         </InputGroup>
         <br />
         <Button

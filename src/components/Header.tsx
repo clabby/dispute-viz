@@ -9,7 +9,7 @@ const Header = () => {
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand href="/">🍊 Disputify</Navbar.Brand>
+        <Navbar.Brand href="/">🌲 Disputify</Navbar.Brand>
         <span style={{ float: 'right' }}>
           {!isError && !isLoading ? (
             <a href="#">
