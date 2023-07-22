@@ -1,23 +1,33 @@
 import useDisputeGame from "@/hooks/useGameState";
 import { Code } from "@/styles/global";
-import { faCopy, faCheck, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faCopy, faCheck, faClock, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useRouter } from "next/router";
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from "react";
-import { Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Button, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { styled } from "styled-components";
+import GameGraph from "@/components/GameGraph";
 
 const Game = () => {
-  const router = useRouter()
-  const { id: gameProxyAddr } = router.query
-  const { isFetching, error, data } = useDisputeGame(gameProxyAddr)
-
   const [upTo, setUpTo] = useState(0)
+  const [playing, setPlaying] = useState(false)
+
+  const queryParameters = useSearchParams()
+  const gameProxyAddr = queryParameters.get('addr')
+  const { isFetching, error, data } = useDisputeGame(gameProxyAddr, upTo)
 
   useEffect(() => {
-    if (data)
-      setUpTo(data?.claims.length - 1)
-  }, [data])
+    if (data && upTo === 0)
+      setUpTo(data?.numClaims)
+
+    if (data && playing) {
+      const interval = setInterval(() => {
+        setUpTo(Number(upTo + 1) >= Number(data?.numClaims) ? 1 : upTo + 1)
+      }, 1000)
+
+      return () => clearInterval(interval)
+    }
+  }, [data, playing])
 
   const winner = useMemo(() => {
     return data && data.winner
@@ -28,7 +38,6 @@ const Game = () => {
       const _winner = data.claims[winner.index]
       const winnerClockDuration = Number(_winner.clock) >> 0x40
       const winnerClockTimestamp = Number(_winner.clock) & 0xFFFFFFFFFFFFFFFF
-      console.log(_winner.parentIndex)
       const opponentClockDuration = _winner.parentIndex === 0xFFFFFFFF
         ? 0
         : Number(data.claims[data.claims[winner.index].parentIndex].clock) >> 0x40
@@ -71,6 +80,10 @@ const Game = () => {
                 >
                   <FontAwesomeIcon icon={faClock} />
                 </OverlayTrigger>
+                <span style={{ color: 'var(--text-dark)' }}> | </span>
+                <a style={{ cursor: 'pointer' }} onClick={() => setPlaying(!playing)}>
+                  <FontAwesomeIcon icon={playing ? faPause : faPlay} />
+                </a>
               </>
             )}
           </span>
@@ -94,9 +107,9 @@ const Game = () => {
               onChange={(e) => {
                 setUpTo(Number(e.currentTarget.value))
               }}
-              min={0}
-              max={data.claims.length - 1}
-              disabled={data.claims.length === 1}
+              min={1}
+              max={data.numClaims}
+              disabled={data.numClaims === 1}
             />
           </OverlayTrigger>
           <Row lg={3}>
@@ -164,6 +177,9 @@ const Game = () => {
                 {data.l2BlockNumber.toString()}
               </Box>
             </Col>
+            <GraphContainer>
+              <GameGraph data={data} upTo={upTo} />
+            </GraphContainer>
           </Row>
         </>
       )}
@@ -203,24 +219,27 @@ const CopyCode = ({
 }
 
 const Box = styled.div<{ variant: string }>`
-      width: 100%;
-      text-align: center;
-      border: 1px solid var(--${props => props.variant});
-      border-radius: 8px;
-      padding: 25px;
-      margin: 10px 0;
+  width: 100%;
+  text-align: center;
+  border: 1px solid var(--${props => props.variant});
+  border-radius: 8px;
+  padding: 25px;
+  margin: 10px 0;
 
-      h1 {
-        font - weight: bold;
+  h1 {
+    font - weight: bold;
   }
-      `
+`
 
 const CenterBox = styled(Box)`
-      width: 50%;
-      margin: 10em auto;
-      padding: 50px;
-      `
+  width: 50%;
+  margin: 10em auto;
+  padding: 50px;
+`
 
-export const runtime = 'experimental-edge'
+const GraphContainer = styled.div`
+  margin-top: 2em;
+  width: 100%;
+`
 
 export default Game;

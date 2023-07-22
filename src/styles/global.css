@@ -55,7 +55,13 @@ html, body, .navbar {
   color: var(--text) !important;
 
   &::placeholder {
-    color: var(--text) !important;
+    color: var(--text-dark) !important;
+  }
+
+  &:focus {
+    box-shadow: none;
+    outline: 0;
+    border: 1px dashed var(--text) !important;
   }
 }
 
@@ -129,4 +135,22 @@ input[type=range] {
 
 .tooltip.bs-tooltip-bottom > .tooltip-arrow::before {
   border-bottom-color: var(--primary);
+}
+
+g.graph{
+  > polygon {
+    fill: transparent !important;
+  }
+
+  > .node {
+    > text {
+      font-family: 'IBM Plex Mono', monospace !important;
+    }
+  }
+
+  > .edge {
+    > text {
+      font-family: 'IBM Plex Mono', monospace !important;
+    }
+  }
 }

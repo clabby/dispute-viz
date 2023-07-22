@@ -23,7 +23,7 @@ export default function Home() {
           size="lg"
           disabled={!isValidAddress}
           onClick={() => {
-            window.location.href = `/game/${game}`
+            window.location.href = `/game?addr=${game}`
           }}
         >
           {isValidAddress ? (

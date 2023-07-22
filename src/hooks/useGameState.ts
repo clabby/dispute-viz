@@ -3,7 +3,7 @@ import { Address, Hash } from "viem"
 import FaultGameABI from '../../public/faultdisputegame.json'
 import { usePublicClient } from "wagmi"
 
-const useDisputeGame = (address: string | string[] | undefined): { isFetching: boolean, error?: string, data?: GameData } => {
+const useDisputeGame = (address: string | null, upTo: number | undefined): { isFetching: boolean, error?: string, data?: GameData } => {
   const [data, setData] = useState<GameData | undefined>()
   const [error, setError] = useState<string | undefined>()
   const client = usePublicClient()
@@ -24,8 +24,10 @@ const useDisputeGame = (address: string | string[] | undefined): { isFetching: b
         client.readContract({ ...contract, functionName: 'status', args: [] })
       ])
 
+      const numClaims = Number(res[3])
+
       const req = []
-      for (let i = 0; i < (res[3] as number); i++) {
+      for (let i = 0; i < (upTo || numClaims); i++) {
         req.push(client.readContract({ ...contract, functionName: 'claimData', args: [i] }))
       }
       let claims: ClaimData[] = (await Promise.all(req)).map((res: any) => {
@@ -43,6 +45,7 @@ const useDisputeGame = (address: string | string[] | undefined): { isFetching: b
       // Set the data.
       setData({
         claims,
+        numClaims,
         createdAt: res[0] as number,
         rootClaim: res[1] as Hash,
         absolutePrestate: res[2] as Hash,
@@ -51,15 +54,13 @@ const useDisputeGame = (address: string | string[] | undefined): { isFetching: b
         winner: findWinner(claims)
       })
     } catch (e) {
-      console.error(e)
-      console.error(address)
       setError('Failed to fetch setup data. Is this a valid game address?')
     }
-  }, [address])
+  }, [address, upTo])
 
   useEffect(() => {
     fetch()
-  }, [address])
+  }, [address, upTo])
 
   return {
     isFetching: !data && !error,
@@ -70,8 +71,9 @@ const useDisputeGame = (address: string | string[] | undefined): { isFetching: b
 
 // ----
 // Types
-interface GameData {
+export interface GameData {
   claims: ClaimData[]
+  numClaims: number
   createdAt: number
   rootClaim: Hash
   absolutePrestate: Hash
@@ -80,7 +82,7 @@ interface GameData {
   winner: Winner
 }
 
-interface ClaimData {
+export interface ClaimData {
   parentIndex: number
   countered: boolean
   claim: Hash
@@ -88,7 +90,7 @@ interface ClaimData {
   clock: BigInt
 }
 
-interface Winner {
+export interface Winner {
   index: number
   traceIndex: number
   opposesRoot: boolean
@@ -129,7 +131,7 @@ const findWinner = (claims: ClaimData[], upTo?: number): Winner => {
 
 type Position = number
 
-const depth = (position: Position): number => {
+export const depth = (position: Position): number => {
   return 127 - Math.clz32(position)
 }
 

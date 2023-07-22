@@ -3,7 +3,7 @@ import { Footer } from '../styles/global'
 const PageFooter = () => {
   return (
     <Footer>
-      Made with ❤️ by clabby.
+      Made with ❤️ by clabby & Adrian.
     </Footer>
   )
 }
