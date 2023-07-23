@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Address, Hash } from "viem"
-import FaultGameABI from '../../public/faultdisputegame.json'
+import FaultGameABI from '@/../public/faultdisputegame.json'
 import { usePublicClient } from "wagmi"
 
 const useDisputeGame = (address: string | null, upTo: number | undefined): { isFetching: boolean, error?: string, data?: GameData } => {

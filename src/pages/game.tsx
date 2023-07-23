@@ -4,7 +4,7 @@ import { faCopy, faCheck, faClock, faPlay, faPause } from "@fortawesome/free-sol
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from "react";
-import { Button, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { styled } from "styled-components";
 import GameGraph from "@/components/GameGraph";
 
@@ -22,7 +22,8 @@ const Game = () => {
 
     if (data && playing) {
       const interval = setInterval(() => {
-        setUpTo(Number(upTo + 1) > Number(data.numClaims) ? 1 : upTo + 1)
+        const upToNext = upTo + 1
+        setUpTo(upToNext > Number(data.numClaims) ? 1 : upToNext)
       }, 1000)
 
       return () => clearInterval(interval)
@@ -47,7 +48,7 @@ const Game = () => {
     }
   }, [winner])
 
-  function durationToString(seconds: number): string {
+  const durationToString = (seconds: number): string => {
     const days = Math.floor(seconds / 86400)
     const hours = Math.floor((seconds - (days * 86400)) / 3600);
     const minutes = Math.floor((seconds - (days * 86400) - (hours * 3600)) / 60);
@@ -77,7 +78,13 @@ const Game = () => {
               <>
                 <span style={{ color: 'var(--text-dark)' }}> | </span>
                 <OverlayTrigger
-                  overlay={<Tooltip>Maximum remaining time until resolution is available:<br /><Code>{durationToString(maxTimeRemaining)}</Code></Tooltip>}
+                  overlay={
+                    <Tooltip>
+                      Maximum remaining time until resolution is available:
+                      <br />
+                      <Code>{durationToString(maxTimeRemaining)}</Code>
+                    </Tooltip>
+                  }
                   placement="bottom"
                 >
                   <FontAwesomeIcon icon={faClock} />
