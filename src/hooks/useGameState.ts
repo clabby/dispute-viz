@@ -108,21 +108,21 @@ const findWinner = (claims: ClaimData[], upTo?: number): Winner => {
   for (let i = leftMostIndex; i > 0;) {
     const claim = claims[i--]
 
-    if (claim.countered) {
+    if (claim.countered && claims.filter(c => Number(c.parentIndex) === i + 1).length > 0) {
       continue
     }
 
-    const trIdx = traceIndex(Number(claim.position), 64)
+    const trIdx = traceIndex(Number(claim.position), 4)
     if (trIdx < leftMostTraceIndex) {
       leftMostIndex = i + 1
       leftMostTraceIndex = trIdx
     }
   }
 
-  if (leftMostTraceIndex === Number.MAX_SAFE_INTEGER) {
+  if (leftMostTraceIndex === Number.MAX_SAFE_INTEGER || (claims[leftMostIndex].countered && depth(Number(claims[leftMostIndex].position)) === 4)) {
     return {
       index: 0,
-      traceIndex: 2 ** 4,
+      traceIndex: 2 ** 4 - 1,
       opposesRoot: false
     }
   }
