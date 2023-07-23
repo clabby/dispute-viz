@@ -113,7 +113,6 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
   const [steps, setSteps] = useState<number[]>([])
 
   const textNodes = useMemo(() => {
-    console.log(steps)
     return baseNodeData
       .filter(data => data.leaf)
       .map((data: any) => `${data.position}->t${data.position - FIRST_LEAF_NODE}[style=dotted][color=darkgoldenrod1][arrowhead=none]` +
@@ -199,7 +198,6 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
 
   const g = useMemo(() => {
     if (textNodes && nodes && connections) {
-      console.log(textNodes)
       const a = `
         digraph {
           // nodes

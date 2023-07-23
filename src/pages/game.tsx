@@ -36,12 +36,14 @@ const Game = () => {
   const maxTimeRemaining = useMemo(() => {
     if (winner && data) {
       const _winner = data.claims[winner.index]
-      const winnerClockDuration = Number(_winner.clock) >> 0x40
-      const winnerClockTimestamp = Number(_winner.clock) & 0xFFFFFFFFFFFFFFFF
+      const winnerClockDuration = BigInt(_winner.clock.toString()) >> BigInt(0x40)
+      const winnerClockTimestamp = BigInt(_winner.clock.toString()) & BigInt("0xFFFFFFFFFFFFFFFF")
       const opponentClockDuration = _winner.parentIndex === 0xFFFFFFFF
-        ? 0
-        : Number(data.claims[data.claims[winner.index].parentIndex].clock) >> 0x40
-      return (7 * 24 * 60 * 60) - opponentClockDuration + winnerClockDuration - (Date.now() / 1000 - winnerClockTimestamp)
+        ? BigInt(0)
+        : BigInt(data.claims[data.claims[winner.index].parentIndex].clock.toString()) >> BigInt(0x40)
+
+      console.log(winnerClockDuration, winnerClockTimestamp, opponentClockDuration)
+      return (7 * 24 * 60 * 60) - Number(opponentClockDuration + winnerClockDuration + (BigInt(Math.floor(Date.now() / 1000)) - winnerClockTimestamp))
     }
   }, [winner])
 
@@ -50,10 +52,10 @@ const Game = () => {
     const hours = Math.floor((seconds - (days * 86400)) / 3600);
     const minutes = Math.floor((seconds - (days * 86400) - (hours * 3600)) / 60);
     const secs = seconds - (days * 86400) - (hours * 3600) - (minutes * 60);
-    const timeString = days.toString().padStart(2, '0') + ':' +
-      hours.toString().padStart(2, '0') + ':' +
-      minutes.toString().padStart(2, '0') + ':' +
-      secs.toFixed(0).padStart(2, '0');
+    const timeString = days.toString().padStart(2, '0') + 'd ' +
+      hours.toString().padStart(2, '0') + 'h ' +
+      minutes.toString().padStart(2, '0') + 'm ' +
+      secs.toFixed(0).padStart(2, '0') + 's';
 
     return timeString;
   }
