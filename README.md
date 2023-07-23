@@ -2,6 +2,8 @@
 
 Visualisation for dispute games on local devnets. Hosted at [dispute.clab.by](https://dispute.clab.by).
 
+![preview](./public/preview.gif)
+
 ## Project setup
 
 ```

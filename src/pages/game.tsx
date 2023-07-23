@@ -23,7 +23,7 @@ const Game = () => {
     if (data && playing) {
       const interval = setInterval(() => {
         const upToNext = upTo + 1
-        setUpTo(upToNext > Number(data.numClaims) ? 1 : upToNext)
+        setUpTo(Number(upToNext) > Number(data.numClaims) ? 1 : upToNext)
       }, 1000)
 
       return () => clearInterval(interval)
