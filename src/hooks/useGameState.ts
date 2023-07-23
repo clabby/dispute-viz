@@ -119,6 +119,14 @@ const findWinner = (claims: ClaimData[], upTo?: number): Winner => {
     }
   }
 
+  if (leftMostTraceIndex === Number.MAX_SAFE_INTEGER) {
+    return {
+      index: 0,
+      traceIndex: 2 ** 4,
+      opposesRoot: false
+    }
+  }
+
   return {
     index: leftMostIndex,
     traceIndex: leftMostTraceIndex,
