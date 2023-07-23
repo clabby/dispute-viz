@@ -132,7 +132,7 @@ const findWinner = (claims: ClaimData[], upTo?: number): Winner => {
 type Position = number
 
 export const depth = (position: Position): number => {
-  return 127 - Math.clz32(position)
+  return 31 - Math.clz32(position)
 }
 
 const indexAtDepth = (position: Position): number => {
@@ -156,7 +156,7 @@ const rightIndex = (position: Position, maxDepth: number): number => {
   return (position << remaining) | ((1 << remaining) - 1)
 }
 
-const traceIndex = (position: Position, maxDepth: number): number => {
+export const traceIndex = (position: Position, maxDepth: number): number => {
   return indexAtDepth(rightIndex(position, maxDepth))
 }
 

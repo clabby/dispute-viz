@@ -1,6 +1,6 @@
 import GraphViz from 'graphviz-react'
-import { GameData, depth } from '@/hooks/useGameState'
-import { useMemo } from 'react'
+import { GameData, depth, traceIndex } from '@/hooks/useGameState'
+import { useMemo, useState } from 'react'
 
 type GameGraphProps = {
   data?: GameData
@@ -94,13 +94,36 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
     return value
   }
 
+  const color = (n: any) => {
+    if (n.active) {
+      return n.accessType === 'Attack' ? '#EA6962' : '#A9B665'
+    } else {
+      return n.accessType === 'Attack' ? '#EA696222' : '#A9B66522'
+    }
+  }
+
+  const levelColor = (n: any) => {
+    if (depth(n.position) % 2 === 0) {
+      return '#89B4FA'
+    } else {
+      return '#D8A657'
+    }
+  }
+
+  const [steps, setSteps] = useState<number[]>([])
+
   const textNodes = useMemo(() => {
+    console.log(steps)
     return baseNodeData
       .filter(data => data.leaf)
       .map((data: any) => `${data.position}->t${data.position - FIRST_LEAF_NODE}[style=dotted][color=darkgoldenrod1][arrowhead=none]` +
-        `t${Number(data.position) - FIRST_LEAF_NODE}[shape=square][color=darkgoldenrod1][fontcolor=darkgoldenrod1][label="${data.position - FIRST_LEAF_NODE}"]`)
+        `t${Number(data.position) - FIRST_LEAF_NODE}[shape=square]` +
+        `${steps.includes(traceIndex(data.position, MAX_GAME_DEPTH))
+          ? `[fillcolor=darkgoldenrod1][style=filled][fontcolor=black]`
+          : `[fontcolor=darkgoldenrod1]`
+        }[color=darkgoldenrod1][label="${data.position - FIRST_LEAF_NODE}"]`)
       .join('\n')
-  }, [])
+  }, [steps])
 
   const nodeData = useMemo(() => {
     if (claims) {
@@ -121,26 +144,24 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
           nodes[node.defend - 1].accessType = 'Defend'
         }
       })
-      claims.forEach((claim: any) => {
+      let steps: number[] = []
+      claims.forEach((claim: any, i: number) => {
         const node = nodes[Number(claim.position) - 1]
         node.active = true
         node.countered = claim.countered
         node.claims.push({ value: claim.claim, countered: claim.countered, position: claim.position })
+
+        if (claim.countered && depth(Number(claim.position)) === MAX_GAME_DEPTH) {
+          steps.push(traceIndex(Number(claim.position), MAX_GAME_DEPTH))
+        }
       })
+      setSteps(steps)
       return nodes
     }
   }, [data, claims])
 
   const nodes = useMemo(() => {
     if (nodeData) {
-      const color = (n: any) => {
-        if (n.active) {
-          return n.accessType === 'Attack' ? '#EA6962' : '#A9B665'
-        } else {
-          return n.accessType === 'Attack' ? '#EA696222' : '#A9B66522'
-        }
-      }
-
       return nodeData.map(data => {
         var label = data.label
         if (data.active) {
@@ -150,7 +171,7 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
         if (data.unused) {
           node += '[color="#667174"][fontcolor="#667174"]'
         } else if (data.active) {
-          node += `[color="${color(data)}"][fontcolor="${color(data)}"]`
+          node += `[color="${levelColor(data)}"][fontcolor="${color(data)}"]`
         } else {
           node += '[color="#D4BE98"][fontcolor="#D4BE98"]'
         }
@@ -161,21 +182,13 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
 
   const connections = useMemo(() => {
     if (nodeData) {
-      const c = (n: any) => {
-        if (n.active) {
-          return n.accessType === 'Attack' ? '#EA6962' : '#A9B665'
-        } else {
-          return n.accessType === 'Attack' ? '#EA696222' : '#A9B66522'
-        }
-      }
-
       return nodeData.map(data => {
         if (data.accessedFrom !== undefined) {
           const isAttack = data.accessType === 'Attack'
-          var color = c(data)
+          const c = color(data)
           return `${data.accessedFrom}->${data.position}` +
             `[constraint=${isAttack}]` +
-            `[color="${color}"][fontcolor="${color}"]` +
+            `[color="${c}"][fontcolor="${c}"]` +
             `[label=${data.active ? data.accessType : '""'}]`
         } else {
           return ""
@@ -185,12 +198,10 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
   }, [nodeData])
 
   const g = useMemo(() => {
-    if (nodes && connections) {
+    if (textNodes && nodes && connections) {
+      console.log(textNodes)
       const a = `
         digraph {
-          // textNodes
-          ${textNodes}
-
           // nodes
           ${nodes}
 
@@ -199,6 +210,9 @@ const GameGraph = ({ data, upTo }: GameGraphProps) => {
 
           // connections
           ${connections}
+
+          // textNodes
+          ${textNodes}
         }
       `
       return a
