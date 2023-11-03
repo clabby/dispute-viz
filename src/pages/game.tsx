@@ -166,15 +166,8 @@ const Game = () => {
                       overlay={<Tooltip>{winner.opposesRoot ? 'Attacker of Root Claim' : 'Defender of Root Claim'}</Tooltip>}
                       placement="top"
                     >
-                      <span>{winner.opposesRoot ? '🔪' : '🛡️'}</span>
+                      <span>{winner.opposesRoot ? '🔪 Challengers Win' : '🛡️ Defenders Win'}</span>
                     </OverlayTrigger>
-                    {' '}
-                    Claim # {winner.index + 1}
-                    {' | '}
-                    <CopyCode
-                      code={`${data.claims[winner.index].claim.slice(0, 8)}..${data.claims[winner.index].claim.slice(58, 64)}`}
-                      toCopy={data.claims[winner.index].claim}
-                    />
                   </>
                 )}
               </Box>

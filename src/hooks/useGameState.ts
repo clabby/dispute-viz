@@ -51,7 +51,7 @@ const useDisputeGame = (address: string | null, upTo: number | undefined): { isF
         absolutePrestate: res[2] as Hash,
         l2BlockNumber: res[4] as number,
         status: res[5] as number,
-        winner: findWinner(claims)
+        winner: resolveGame(claims, 4),
       })
     } catch (e) {
       setError('Failed to fetch setup data. Is this a valid game address?')
@@ -92,45 +92,43 @@ export interface ClaimData {
 
 export interface Winner {
   index: number
-  traceIndex: number
   opposesRoot: boolean
 }
 
 // ----
 // Resolution
 
-const findWinner = (claims: ClaimData[], upTo?: number): Winner => {
+const resolveGame = (claims: ClaimData[], maxDepth: number, upTo?: number): Winner => {
   if (!upTo) {
     upTo = claims.length
   }
-  let leftMostIndex = upTo - 1
-  let leftMostTraceIndex = Number.MAX_SAFE_INTEGER
-  for (let i = leftMostIndex; i > 0;) {
-    const claim = claims[i--]
 
-    if (claim.countered && claims.filter(c => Number(c.parentIndex) === i + 1).length > 0) {
-      continue
+  // iterate claims in reverse order
+  // mark their parents as disputed (reuse the countered bit for this purpose)
+  // ... unless the current claim is disputed
+  let subgames: ClaimData[] = claims.map((c) => {
+    let disputed = false;
+    if (depth(Number(c.position)) == maxDepth) {
+      disputed = c.countered;
     }
-
-    const trIdx = traceIndex(Number(claim.position), 4)
-    if (trIdx < leftMostTraceIndex) {
-      leftMostIndex = i + 1
-      leftMostTraceIndex = trIdx
-    }
-  }
-
-  if (leftMostTraceIndex === Number.MAX_SAFE_INTEGER || (claims[leftMostIndex].countered && depth(Number(claims[leftMostIndex].position)) === 4)) {
     return {
-      index: 0,
-      traceIndex: 2 ** 4 - 1,
-      opposesRoot: false
+      parentIndex: c.parentIndex,
+      countered: disputed,
+      claim: c.claim,
+      position: c.position,
+      clock: c.clock,
+    }
+  })
+  for (let i = upTo-1; i >=0; i--) {
+    const subgame = subgames[i]
+    const parentSubgame = subgames[subgame.parentIndex]
+    if (!subgame.countered && parentSubgame !== undefined) {
+      parentSubgame.countered = true
     }
   }
-
   return {
-    index: leftMostIndex,
-    traceIndex: leftMostTraceIndex,
-    opposesRoot: depth(Number(claims[leftMostIndex].position)) % 2 !== 0
+    index: upTo-1,
+    opposesRoot: subgames[0].countered,
   }
 }
 
